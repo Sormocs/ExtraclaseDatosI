@@ -11,7 +11,7 @@ public class OpenServer{
 
     public OpenServer(){
         this.ip = "127.0.0.1";
-        this.puerto = 45000;
+        this.puerto = 5000;
         this.open = false;
 
     }

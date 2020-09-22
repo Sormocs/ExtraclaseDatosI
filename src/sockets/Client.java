@@ -5,7 +5,7 @@ import java.io.*;
 public class Client {
     private ServerSocket server;
     private Socket socket;
-    private int puerto= 45000;
+    private int puerto= 5000;
     private String ip = "127.0.0.1";
     private BufferedReader entrada;
     private String mensaje = "";

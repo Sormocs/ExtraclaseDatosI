@@ -14,26 +14,20 @@ public class Ventana extends JFrame implements ActionListener, Runnable {
     private OpenServer server_access = new OpenServer();
     private JLabel texto;
     private JLabel port_num;
+    private JLabel send;
     private JTextField entryBox;
     private JButton boton;
     private JTextArea tbox;
     private JTextField port_box;
     private JScrollPane scroll;
-    private String mensaje_entrante;
 
     public Ventana() {
         super();
         server_access.FindPort();
         configurarVentana();
         inicializarComponentes();
-        this.mensaje_entrante = "";
         Thread begin_server = new Thread(this);
         begin_server.start();
-    }
-
-    public void setMensaje_entrante(String mensaje_entrante) {
-        this.mensaje_entrante = mensaje_entrante;
-        tbox.append(this.mensaje_entrante);
     }
 
     private void configurarVentana() {
@@ -49,6 +43,7 @@ public class Ventana extends JFrame implements ActionListener, Runnable {
 
         texto = new JLabel();
         port_num = new JLabel();
+        send = new JLabel();
         entryBox = new JTextField();
         boton = new JButton();
         tbox = new JTextArea();
@@ -58,13 +53,15 @@ public class Ventana extends JFrame implements ActionListener, Runnable {
         texto.setText("Chat");
         texto.setBounds(20, 0, 100, 25);
 
-        port_num.setText(String.valueOf(server_access.getPuerto()));
-        port_num.setBounds(130,340,100,25);
+        port_num.setText("Este Puerto: "+ String.valueOf(server_access.getPuerto()));
+        port_num.setBounds(280,340,100,25);
+
+        send.setText("Enviar al puerto:");
+        send.setBounds(20,335,100,30);
 
         entryBox.setBounds(20, 300, 250, 30);
-        port_box.setBounds(20,340,100,25);
+        port_box.setBounds(120,340,100,25);
 
-        //tbox.setBounds(20, 20, 350, 250);
         scroll.setBounds(20, 20, 350, 250);
         tbox.setEditable(false);
         tbox.setLineWrap(true);
@@ -75,22 +72,24 @@ public class Ventana extends JFrame implements ActionListener, Runnable {
 
         this.add(texto);
         this.add(port_num);
+        this.add(send);
         this.add(entryBox);
         this.add(port_box);
         this.add(boton);
         this.add(scroll);
     }
-    public String getText(){
-        return entryBox.getText();
-    }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        acceso.setPuerto(Integer.parseInt(this.port_box.getText()));
-        String message = entryBox.getText();
-        tbox.append("De ti: "+message + "\n");
-        acceso.setMensaje(message + "\n");
-        acceso.start();
+        try{//if (this.entryBox.getText() != null & this.port_box.getText() != null){
+            acceso.setPuerto(Integer.parseInt(this.port_box.getText()));
+            String message = entryBox.getText();
+            tbox.append("De ti: " + message + "\n");
+            acceso.setMensaje(message + "\n");
+            acceso.start();
+        }catch(NumberFormatException e1){
+            JOptionPane.showMessageDialog(this, "Por favor Introduzca los datos requeridos");
+        }
     }
 
     @Override
@@ -101,7 +100,7 @@ public class Ventana extends JFrame implements ActionListener, Runnable {
                 Socket entrada = receptor.accept();
                 DataInputStream data_entrance = new DataInputStream(entrada.getInputStream());
                 String message = data_entrance.readUTF();
-                tbox.append("\nRecibe: " + message);
+                tbox.append("Recibe: " + message);
                 entrada.close();
             }
 
