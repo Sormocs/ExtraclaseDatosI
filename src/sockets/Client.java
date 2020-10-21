@@ -1,6 +1,7 @@
 package sockets;
 import java.net.*;
 import java.io.*;
+import java.util.logging.*;
 
 /**
  *Clase "Client" que permite de hacer al programa funcionar como cliente, es decir, de permitir que pueda enviar
@@ -14,6 +15,7 @@ public class Client {
     private String ip = "127.0.0.1";
     private BufferedReader entrada;
     private String mensaje = "";
+    private Logger clientLogger = Logger.getLogger(Client.class.getName());
 
     /**
      * Constructor de cliente, aunque no recibe valores, estos van a cambiar ya que posee los iniciales que se
@@ -47,6 +49,27 @@ public class Client {
      * para enviarlos por el socket al puerto deseado. Este método es accedido por el botón "enviar" en la
      * clase Ventana.
      */
+
+    private FileHandler LogHandler (Logger log, String log_type, String place){
+        try{
+            FileHandler manejoLogs = new FileHandler("registro_log.log", true);
+            log.addHandler(manejoLogs);
+            final SimpleFormatter format = new SimpleFormatter();
+            manejoLogs.setFormatter(format);
+            if(log_type.equals("WARNING")){
+                log.warning("Warning "+ place );
+            } else if(log_type.equals("INFO")){
+                log.info("Exception "+place);
+            } else{
+                log.severe("Severe exception "+place);
+            }
+            return manejoLogs;
+        } catch (SecurityException | IOException e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     public void start(){
         try{
             Socket clients = new Socket(this.ip,this.puerto);
@@ -55,10 +78,12 @@ public class Client {
             salida.close();
 
         } catch(UnknownHostException e1) {
+            this.LogHandler(clientLogger, "SEVERE", "severe exception UnknownHost in method Start");
             e1.printStackTrace();
 
         } catch (IOException e1){
-            System.out.println(e1.getMessage());
+            this.LogHandler(clientLogger, "INFO", "detected in start method");
+            e1.printStackTrace();
         }
     }
 }

@@ -2,10 +2,15 @@ import sockets.Client;
 import sockets.OpenServer;
 import java.awt.event.*;
 import java.io.DataInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.logging.FileHandler;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 import javax.swing.*;
+
 
 /**
  * Clase Ventana que se encarga de utilizar los métodos de la clase JFrame de Java, para
@@ -28,6 +33,7 @@ public class Ventana extends JFrame implements ActionListener, Runnable {
     private JTextArea tbox;
     private JTextField port_box;
     private JScrollPane scroll;
+    private Logger logs = Logger.getLogger(Ventana.class.getName());
 
     /**
      * Método ventana, el cual se encarga de llamar al constructor y métodos de la clase padre (JFrame) y a los objetos
@@ -43,6 +49,8 @@ public class Ventana extends JFrame implements ActionListener, Runnable {
         inicializarComponentes();
         Thread begin_server = new Thread(this);
         begin_server.start();
+        Close();
+
     }
 
     /**
@@ -56,7 +64,29 @@ public class Ventana extends JFrame implements ActionListener, Runnable {
         this.setLocationRelativeTo(null);
         this.setLayout(null);
         this.setResizable(false);
-        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        //Close();
+        //this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    }
+
+    private void Close(){
+        try{
+            this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+            addWindowListener(new WindowAdapter() {
+                public void windowClosing(WindowEvent e){
+                    ConfirmExit();
+                }
+            });
+            this.setVisible(true);
+        } catch (Exception e){
+            this.LogHandler(this.logs, "INFO", "exception detected in Close method");
+        }
+    }
+
+    public void ConfirmExit(){
+        int value = JOptionPane.showConfirmDialog(this, "¿Seguro que desea salir?","Salida", JOptionPane.YES_NO_OPTION);
+        if(value == JOptionPane.YES_OPTION){
+            System.exit(0);
+        }
     }
 
     /**
@@ -103,6 +133,30 @@ public class Ventana extends JFrame implements ActionListener, Runnable {
         this.add(scroll);
     }
 
+    private FileHandler LogHandler (Logger log, String log_type,String place){
+
+        try{
+            FileHandler manejoLogs = new FileHandler("registro_log.log", true);
+            log.addHandler(manejoLogs);
+            final SimpleFormatter format = new SimpleFormatter();
+            manejoLogs.setFormatter(format);
+            if(log_type.equals("WARNING")){
+                log.warning("Warning "+ place );
+            } else if(log_type.equals("INFO")){
+                log.info("Exception "+place);
+            } else{
+                log.severe("Severe exception "+place);
+            }
+
+            manejoLogs.close();
+            return manejoLogs;
+
+        } catch(SecurityException |IOException e){
+            e.printStackTrace();
+            return null;
+        }
+    }
+
     /**
      * Se encarga de detectar el evento que sucede cuando se la hce click al botón de enviar el mensaje y
      * revisar si se puede enviar el mensaje a algún puerto, si tira un error que no lo permite, sale un
@@ -118,6 +172,7 @@ public class Ventana extends JFrame implements ActionListener, Runnable {
             acceso.setMensaje(message + "\n");
             acceso.start();
         }catch(NumberFormatException e1){
+            LogHandler(logs, "WARNING"," detected in method actionPerformed");
             JOptionPane.showMessageDialog(this, "Por favor Introduzca los datos requeridos");
         }
     }
@@ -140,6 +195,7 @@ public class Ventana extends JFrame implements ActionListener, Runnable {
             }
 
         } catch (IOException e){
+            LogHandler(logs, "INFO"," detected in run method");
             e.printStackTrace();
         }
     }
